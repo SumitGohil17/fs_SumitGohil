@@ -22,6 +22,7 @@ Coming soon…
 
 ---
 
+
 ## 🏗️ Tech Stack
 
 | Layer                  | Technology                                      |
@@ -40,4 +41,16 @@ Coming soon…
 ---
 
 ## 🗺️ High-Level Architecture
+<img width="2310" height="1111" alt="diagram-export-9-15-2025-1_45_37-PM" src="https://github.com/user-attachments/assets/5f08be05-43a6-4523-979c-6a0cc2408e34" />
 
+
+## 🔄 Core User Flow
+
+### 1. Get Current Location & Destination
+- Frontend uses browser/mobile geolocation to get the current `lat/lng`.
+- Calls Google Maps / GoMaps Geocoding API to convert the destination address into `destLat/destLng`.
+
+### 2. Search Nearby Students
+- **API Request:**
+```http
+GET /api/v1/rides/search?lat={curLat}&lng={curLng}&destLat={dLat}&destLng={dLng}&radius=5km
