@@ -46,11 +46,89 @@ Coming soon…
 
 ## 🔄 Core User Flow
 
-### 1. Get Current Location & Destination
-- Frontend uses browser/mobile geolocation to get the current `lat/lng`.
-- Calls Google Maps / GoMaps Geocoding API to convert the destination address into `destLat/destLng`.
+# Get Current Location & Destination
 
-### 2. Search Nearby Students
-- **API Request:**
-```http
+- Frontend uses browser/mobile geolocation for current lat/lng.
+
+- Calls Google/GoMaps Geocoding to convert destination to destLat/destLng.
+
+## Search Nearby Students
+```
+API:
+
 GET /api/v1/rides/search?lat={curLat}&lng={curLng}&destLat={dLat}&destLng={dLng}&radius=5km
+
+```
+Backend queries MongoDB with $near on both currentLocation and destination.
+
+Display Matches
+
+- Frontend renders pins on the map and a side/bottom sheet list.
+
+- Realtime updates stream over Socket.IO channels.
+
+## Confirm Ride
+```
+API:
+
+POST /api/v1/rides/{rideId}/confirm
+
+```
+Backend updates status and broadcasts ride:confirmed event.
+
+## Frontend removes other matches and opens a private chat.
+
+📡 REST / WebSocket API Overview
+Method	Endpoint	Purpose
+
+- POST	/api/v1/auth/signup	Register student, returns JWT + publicId
+
+- POST	/api/v1/auth/login	Login, returns JWT
+
+- POST	/api/v1/rides	Create ride offer/request
+
+- GET	/api/v1/rides/search	Find nearby matching rides
+
+- POST	/api/v1/rides/{rideId}/confirm	Confirm ride match
+
+WS	ride:location:update	Push live location updates
+
+WS	chat:message	Realtime chat messages
+
+🌍 Google Maps API Endpoints Used
+```
+Geocoding (address → lat/lng):
+
+https://maps.googleapis.com/maps/api/geocode/json?address={DESTINATION}&key=YOUR_API_KEY
+
+```
+```
+Reverse Geocoding (lat/lng → address):
+
+https://maps.googleapis.com/maps/api/geocode/json?latlng={LAT},{LNG}&key=YOUR_API_KEY
+
+```
+```
+Nearby Search (optional for POIs):
+
+https://maps.googleapis.com/maps/api/place/nearbysearch/json
+   ?location={LAT},{LNG}&radius=5000&type=point_of_interest&key=YOUR_API_KEY
+
+```
+These URLs are called from the Map Provider Abstraction Service so you can swap Google ↔ GoMaps without frontend changes.
+
+## 🚀 Deployment
+
+Build Images
+```
+docker build -t student-rideshare-api .
+docker build -t student-rideshare-web .
+```
+
+Push to Registry`
+GitHub Actions pushes to DockerHub or ECR.
+
+## Deploy to Kubernetes
+```
+kubectl apply -f k8s/
+```
